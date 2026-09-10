@@ -1,0 +1,7 @@
+{
+  "name": "DialFlow",
+  "description": "Personal calling-queue application designed to streamline repetitive outbound calling workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
