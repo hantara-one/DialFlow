@@ -22,9 +22,9 @@ Instead of manually dialing numbers one by one, DialFlow organizes phone numbers
 
 Each number can have one of three statuses:
 
-- 🟡 **Pending** — The number has not been called yet.
-- 🟢 **Called** — The number has been called.
-- ⚪ **Skipped** — The number has been skipped.
+- **Pending** — The number has not been called yet.
+- **Called** — The number has been called.
+- **Skipped** — The number has been skipped.
 
 > Status represents call history and does not prevent a number from being selected or called again.
 
