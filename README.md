@@ -6,19 +6,19 @@ DialFlow is an Android application built to streamline workflows that involve ca
 
 Instead of manually dialing numbers one by one, DialFlow organizes phone numbers into a manageable queue and provides tools to navigate, track, and revisit numbers throughout the calling process.
 
-## ✨ Features
+## Features
 
-### 📋 Calling Queue
+### Calling Queue
 - Import multiple phone numbers at once.
 - Automatically organize numbers into a calling queue.
 - Navigate through the queue sequentially.
 - Easily return to previously handled numbers.
 
-### 📞 Calling Modes
+### Calling Modes
 - **Auto** — automatically proceeds through the queue with a configurable cooldown.
 - **Manual** — gives the user full control over when to proceed to the next number.
 
-### 🎯 Call Status Tracking
+### Call Status Tracking
 
 Each number can have one of three statuses:
 
@@ -28,20 +28,20 @@ Each number can have one of three statuses:
 
 > Status represents call history and does not prevent a number from being selected or called again.
 
-### 🔎 Queue Search
+### Queue Search
 - Search for specific phone numbers in the queue.
 - Numeric phone keyboard for faster number input.
 - **Move to number** — quickly jump to a matching number in the queue.
 - **Set as Current** — select a number as the current calling target.
 - **Delete** — remove a specific number from the queue.
 
-### ⏮️ Queue Navigation
+### Queue Navigation
 - **Return** to previously handled numbers.
 - **Skip** numbers when necessary.
 - **Back to Top** button for quickly returning to the beginning of a long queue.
 - Queue items are highlighted when navigating from search results.
 
-## 🧠 Why DialFlow?
+## Why DialFlow?
 
 DialFlow was created to solve a simple but repetitive problem: calling a large number of people efficiently.
 
@@ -49,7 +49,7 @@ When hundreds of phone numbers need to be contacted, manually entering each numb
 
 The project started as a practical tool for a real-world workflow and gradually evolved into a more polished Android application.
 
-## 📱 How It Works
+## How It Works
 
 1. **Import** a list of phone numbers.
 2. DialFlow creates a **calling queue**.
@@ -58,17 +58,11 @@ The project started as a practical tool for a real-world workflow and gradually 
 5. Track each number using its status.
 6. Use **Search**, **Return**, **Skip**, or **Move to number** whenever needed.
 
-## 🛠️ Development
+## Development
 
-DialFlow is developed as an Android application with the assistance of **Google AI Studio** and **Android Studio**.
+DialFlow is developed as an Android application with the assistance of **Google AI Studio** and **Android Studio**. The project began as an AI-assisted development experiment and evolved into a functional tool designed around an actual calling workflow.
 
-The project began as an AI-assisted development experiment and evolved into a functional tool designed around an actual calling workflow.
-
-## 📦 Latest Release
-
-[View Release](https://github.com/hantara-one/Han-DialFlow/releases/tag/queue-number)
-
-## 🚧 Project Status
+## Project Status
 
 **🟢 Stable**
 
@@ -76,10 +70,10 @@ DialFlow is currently functional and actively maintained.
 
 Future improvements may include additional workflow optimizations, usability improvements, and further refinement of the Android experience.
 
-## 📸 Screenshots
+## Screenshots
 
 Screenshots will be added as the project develops.
 
-## 📄 License
+## License
 
 License information will be added in a future update.
