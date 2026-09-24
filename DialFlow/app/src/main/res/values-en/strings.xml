@@ -1,0 +1,170 @@
+<resources>
+    <string name="app_name">DialFlow</string>
+    <string name="app_subtitle_queue_manager_by">A QUEUE MANAGER BY</string>
+    <string name="splash_queue_manager">QUEUE MANAGER</string>
+    <string name="author_name">AM HANIF</string>
+
+    <!-- Bottom Dock Actions -->
+    <string name="action_return">RETURN</string>
+    <string name="action_begin_call">BEGIN CALL</string>
+    <string name="action_skip">SKIP</string>
+    <string name="action_start">START</string>
+    <string name="action_pause">PAUSE</string>
+
+    <string name="desc_return">Return</string>
+    <string name="desc_begin_call">Begin Call</string>
+    <string name="desc_skip">Skip</string>
+    <string name="desc_start">Start</string>
+    <string name="desc_pause">Pause</string>
+
+    <!-- Paste & Import Section -->
+    <string name="paste_phone_numbers">Paste Phone Numbers</string>
+    <string name="auto_format">AUTO-FORMAT</string>
+    <string name="import_numbers">Import Numbers</string>
+    <string name="import_n_numbers">Import %d Numbers</string>
+    <string name="clear">Clear</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="import_stats_format">%1$d numbers imported (%2$d valid, %3$d flagged)</string>
+
+    <!-- Metrics Bar -->
+    <string name="metric_total">TOTAL</string>
+    <string name="metric_done">DONE</string>
+    <string name="metric_skipped">SKIPPED</string>
+    <string name="metric_remain">REMAIN</string>
+    <string name="metric_current">CURRENT</string>
+
+    <!-- Current Target Card -->
+    <string name="current_target">CURRENT TARGET</string>
+    <string name="no_active_number">No active number</string>
+    <string name="raw_prefix">Raw: %s</string>
+    <string name="ready_to_recall_sub">Previously called • Ready to recall</string>
+    <string name="standard_cellular_sub">Standard Cellular • Native Dialer</string>
+
+    <string name="status_active">ACTIVE</string>
+    <string name="status_dialing">DIALING</string>
+    <string name="status_calling">CALLING</string>
+    <string name="status_called_caps">CALLED</string>
+    <string name="status_skipped_caps">SKIPPED</string>
+    <string name="status_failed_caps">FAILED</string>
+    <string name="status_ready_caps">READY</string>
+    <string name="status_paused_caps">PAUSED</string>
+    <string name="status_stopped_caps">STOPPED</string>
+    <string name="status_completed_caps">COMPLETED</string>
+
+    <string name="telephony_prefix">Telephony: %s</string>
+    <string name="progress_ratio">Progress: %1$d of %2$d</string>
+    <string name="auto_advancing_in">Auto-advancing in %ds…</string>
+    <string name="ready_to_recall_title">Ready to Recall</string>
+    <string name="queue_paused_title">Queue Paused</string>
+    <string name="next_number_dials_auto">Next number dials automatically</string>
+    <string name="tap_recall_auto">Tap Recall to dial this number again</string>
+    <string name="n_remaining_in_queue">%d remaining in queue</string>
+    <string name="btn_call_now">Call Now</string>
+    <string name="btn_recall">Recall</string>
+    <string name="btn_resume">Resume</string>
+    <string name="ready_to_call_title">Ready to Call</string>
+    <string name="queue_completed_title">Queue Completed</string>
+    <string name="tap_recall_manual">Tap Recall to call this number again</string>
+    <string name="btn_call">Call</string>
+
+    <!-- Queue List & Items -->
+    <string name="calling_queue">Calling Queue</string>
+    <string name="clear_queue">Clear Queue</string>
+    <string name="no_numbers_in_queue">No numbers in queue</string>
+    <string name="paste_numbers_hint">Paste numbers above and click \'Import Numbers\'</string>
+    <string name="badge_new">NEW</string>
+    <string name="badge_reordering">REORDERING</string>
+    <string name="badge_located">LOCATED</string>
+
+    <string name="status_item_called">Called</string>
+    <string name="status_item_in_progress">In Progress</string>
+    <string name="status_item_skipped">Skipped</string>
+    <string name="status_item_failed">Failed</string>
+    <string name="status_item_pending">Pending</string>
+
+    <string name="desc_recall_number">Recall %s</string>
+    <string name="desc_call_number">Call %s</string>
+    <string name="desc_delete_entry">Delete entry</string>
+    <string name="desc_hold_and_drag">Hold and drag to reorder queue</string>
+    <string name="desc_calling_current">Calling / Current</string>
+    <string name="desc_status_completed">Completed</string>
+    <string name="desc_status_skipped">Skipped</string>
+    <string name="desc_status_failed">Failed</string>
+    <string name="desc_status_pending">Pending</string>
+
+    <!-- Delete Confirmation Dialog -->
+    <string name="delete_number_title">Delete Number</string>
+    <string name="delete_number_confirm">Are you sure you want to delete %s from the queue? This will permanently remove it.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Search Section -->
+    <string name="search_queue_hint">Search queue…</string>
+    <string name="search_results_title">Search Results</string>
+    <string name="search_found_count">%d found</string>
+    <string name="no_matching_numbers">No matching numbers found</string>
+    <string name="search_no_results_for">No matching numbers found in queue for \"%s\"</string>
+    <string name="try_searching_different">Try searching with different digits</string>
+    <string name="move_to_number">Move to number</string>
+    <string name="set_as_current">Set as Current</string>
+    <string name="desc_search_icon">Search icon</string>
+    <string name="desc_clear_search">Clear search</string>
+    <string name="desc_more_options_for">More options for %s</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">Settings &amp; Permissions</string>
+    <string name="desc_settings_button">Dialer Settings &amp; Permissions</string>
+    <string name="settings_calling_mode">Calling Mode</string>
+    <string name="settings_calling_mode_desc">Choose how the dialer advances through your queued numbers.</string>
+    <string name="calling_mode_auto">Auto</string>
+    <string name="calling_mode_auto_desc">Automatically proceed to the next queued number after the current call ends and cooldown finishes.</string>
+    <string name="calling_mode_manual">Manual</string>
+    <string name="calling_mode_manual_desc">Wait for the user to explicitly press the \"Begin Call\" button after the current call ends.</string>
+    <string name="settings_cooldown_label">Auto-Advance Cooldown: %d s</string>
+    <string name="settings_cooldown_desc">Delay after call ends before dialing the next number in queue.</string>
+    <string name="cooldown_disabled">Cooldown Disabled</string>
+    <string name="cooldown_manual_note">In Manual mode, \"Begin Call\" is immediately available after each call ends without any waiting period.</string>
+
+    <!-- Phone Number Format Settings -->
+    <string name="settings_phone_number_format">Phone Number Format</string>
+    <string name="settings_phone_number_format_desc">Choose presentation and dialing format for Indonesian numbers.</string>
+    <string name="format_local_title">Local</string>
+    <string name="format_local_desc">08...</string>
+    <string name="format_international_title">International</string>
+    <string name="format_international_desc">+62...</string>
+
+    <!-- Language Settings -->
+    <string name="settings_language">Language</string>
+    <string name="settings_language_desc">Select application language.</string>
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_english_sub">Default language</string>
+    <string name="language_indonesian_sub">Lokalisasi Bahasa Indonesia</string>
+
+    <string name="settings_telephony_permissions">Telephony Permissions</string>
+    <string name="perm_call_phone">CALL_PHONE</string>
+    <string name="perm_read_phone_state">READ_PHONE_STATE</string>
+    <string name="perm_granted_direct">Granted (Direct Call)</string>
+    <string name="perm_not_granted_fallback">Not Granted (Dialer fallback)</string>
+    <string name="perm_granted_monitoring">Granted (Call Monitoring)</string>
+    <string name="perm_not_granted">Not Granted</string>
+    <string name="btn_grant">Grant</string>
+    <string name="settings_default_dialer_role">Default Dialer Role</string>
+    <string name="dialer_role_active">Default Dialer Active</string>
+    <string name="dialer_role_standard">Standard App Mode</string>
+    <string name="dialer_role_active_desc">InCallService monitors call lifecycle</string>
+    <string name="dialer_role_standard_desc">Tap to set as default phone app</string>
+    <string name="btn_set">Set</string>
+    <string name="btn_done">Done</string>
+
+    <!-- Architecture Dialog -->
+    <string name="arch_dialog_title">Android Telephony Architecture</string>
+    <string name="arch_dialog_intro">DialFlow follows strict native Android telephony rules without questionable workarounds:</string>
+    <string name="arch_dialog_standard_mode">1. Standard App Mode:\n• Initiates outgoing cellular calls using ACTION_CALL (requires CALL_PHONE).\n• TelephonyCallback/TelephonyManager detects call disconnect (OFFHOOK → IDLE transition).\n• Android restricts standard apps from reading fine-grained call states without default dialer status.</string>
+    <string name="arch_dialog_default_mode">2. Default Dialer Mode (ROLE_DIALER):\n• Unlocks Telecom InCallService.\n• InCallService receives exact real-time call states (DIALING, RINGING, ACTIVE, DISCONNECTED) for automatic sequential calling.</string>
+    <string name="arch_status_active">Status: Default Dialer Active (InCallService Enabled)</string>
+    <string name="arch_status_standard">Status: Operating in Standard Mode</string>
+    <string name="btn_request_default_dialer">Request Default Dialer</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_keep_standard_mode">Keep Standard Mode</string>
+</resources>
