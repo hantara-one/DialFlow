@@ -21,7 +21,7 @@ class QueueRepository(private val queueDao: QueueDao) {
         queueDao.getNextPendingItem()?.toModel()
     }
 
-    suspend fun insertEntries(entries: List<PhoneNumberEntry>) = withContext(Dispatchers.IO) {
+    suspend fun insertEntries(entries: List<PhoneNumberEntry>): List<Long> = withContext(Dispatchers.IO) {
         val entities = entries.map { QueueItemEntity.fromModel(it) }
         queueDao.insertAll(entities)
     }
@@ -37,6 +37,11 @@ class QueueRepository(private val queueDao: QueueDao) {
 
     suspend fun deleteEntry(id: Long) = withContext(Dispatchers.IO) {
         queueDao.deleteById(id)
+    }
+
+    suspend fun updateAll(entries: List<PhoneNumberEntry>) = withContext(Dispatchers.IO) {
+        val entities = entries.map { QueueItemEntity.fromModel(it) }
+        queueDao.updateAll(entities)
     }
 
     suspend fun clearQueue() = withContext(Dispatchers.IO) {

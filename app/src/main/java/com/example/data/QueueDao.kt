@@ -31,6 +31,9 @@ interface QueueDao {
     @Update
     suspend fun update(item: QueueItemEntity)
 
+    @Update
+    suspend fun updateAll(items: List<QueueItemEntity>)
+
     @Query("UPDATE calling_queue SET status = :status, callTimestamp = :timestamp WHERE id = :id")
     suspend fun updateStatus(id: Long, status: String, timestamp: Long?)
 

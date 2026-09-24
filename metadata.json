@@ -1,7 +1,8 @@
 {
-  "name": "DialFlow",
+  "name": "Remix DialFlow 1.3.0",
   "description": "Personal calling-queue application designed to streamline repetitive outbound calling workflows.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
-

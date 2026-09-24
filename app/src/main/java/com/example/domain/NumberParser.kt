@@ -12,22 +12,24 @@ data class ParseBatchResult(
 
 object NumberParser {
 
+    fun previewCount(rawText: String): Int {
+        if (rawText.isBlank()) return 0
+        return SmartPasteParser.extractNumbers(rawText).size
+    }
+
     fun parse(rawText: String, startIndex: Int = 0): ParseBatchResult {
         if (rawText.isBlank()) {
             return ParseBatchResult(emptyList(), 0, 0, 0)
         }
 
-        // Split by newlines, commas, or semicolons
-        val lines = rawText.split(Regex("[\\r\\n,;]+"))
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
+        val numbers = SmartPasteParser.extractNumbers(rawText)
 
         val entries = mutableListOf<PhoneNumberEntry>()
         var validCount = 0
         var invalidCount = 0
 
-        lines.forEachIndexed { index, line ->
-            val norm = PhoneNumberNormalizer.normalize(line)
+        numbers.forEachIndexed { index, rawNum ->
+            val norm = PhoneNumberNormalizer.normalize(rawNum)
             if (norm.isValid) {
                 validCount++
             } else {

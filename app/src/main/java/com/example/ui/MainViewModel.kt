@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.AppDatabase
@@ -13,9 +15,11 @@ import com.example.data.QueueRepository
 import com.example.domain.CallQueueManager
 import com.example.domain.NumberParser
 import com.example.domain.QueueEvent
+import com.example.domain.QueueSearchMatcher
 import com.example.models.CallingMode
 import com.example.models.ObservedCallState
 import com.example.models.PhoneNumberEntry
+import com.example.models.PhoneNumberFormatPreference
 import com.example.models.QueueExecutionState
 import com.example.models.QueueSummary
 import com.example.telephony.CallObserverSource
@@ -23,11 +27,21 @@ import com.example.telephony.CallStateObserver
 import com.example.telephony.DialerRoleHelper
 import com.example.telephony.TelecomCallController
 import com.example.telephony.TelephonyCallStateObserver
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+data class ImportBatchStats(
+    val totalCount: Int,
+    val validCount: Int,
+    val invalidCount: Int
+)
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -46,7 +60,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         callStateObserver = callStateObserver,
         scope = viewModelScope,
         initialCallingMode = preferences.callingMode,
-        initialDelaySeconds = preferences.autoAdvanceDelaySeconds
+        initialDelaySeconds = preferences.autoAdvanceDelaySeconds,
+        initialNumberFormat = preferences.numberFormatPreference
     )
 
     val queueItems: StateFlow<List<PhoneNumberEntry>> = queueManager.queueItems
@@ -58,8 +73,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val observerSource: StateFlow<CallObserverSource> = callStateObserver.observerSource
     val callingMode: StateFlow<CallingMode> = queueManager.callingMode
     val autoAdvanceDelaySeconds: StateFlow<Int> = queueManager.autoAdvanceDelaySeconds
+    val numberFormatPreference: StateFlow<PhoneNumberFormatPreference> = queueManager.numberFormatPreference
     val countdownRemaining: StateFlow<Int?> = queueManager.countdownRemaining
     val events: SharedFlow<QueueEvent> = queueManager.events
+
+    private val _currentLanguage = MutableStateFlow(preferences.languageCode)
+    val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
     private val _isDefaultDialer = MutableStateFlow(false)
     val isDefaultDialer: StateFlow<Boolean> = _isDefaultDialer.asStateFlow()
@@ -76,9 +95,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _lastImportStats = MutableStateFlow<String?>(null)
     val lastImportStats: StateFlow<String?> = _lastImportStats.asStateFlow()
 
+    private val _lastImportBatchStats = MutableStateFlow<ImportBatchStats?>(null)
+    val lastImportBatchStats: StateFlow<ImportBatchStats?> = _lastImportBatchStats.asStateFlow()
+
+    private val _recentlyImportedIds = MutableStateFlow<Set<Long>>(emptySet())
+    val recentlyImportedIds: StateFlow<Set<Long>> = _recentlyImportedIds.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    val searchResults: StateFlow<List<PhoneNumberEntry>> =
+        combine(queueItems, _searchQuery) { items, query ->
+            QueueSearchMatcher.filterQueue(items, query)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         refreshTelephonyAndPermissionState()
         callStateObserver.startObserving()
+        val savedLang = preferences.languageCode
+        val currentAppLocales = AppCompatDelegate.getApplicationLocales()
+        if (currentAppLocales.isEmpty || currentAppLocales.toLanguageTags() != savedLang) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(savedLang))
+        }
     }
 
     override fun onCleared() {
@@ -111,9 +149,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         if (parseResult.entries.isNotEmpty()) {
             viewModelScope.launch {
-                repository.insertEntries(parseResult.entries)
+                val insertedIds = repository.insertEntries(parseResult.entries)
                 _rawInputText.value = ""
                 _lastImportStats.value = "${parseResult.totalCount} numbers imported (${parseResult.validCount} valid, ${parseResult.invalidCount} flagged)"
+                _lastImportBatchStats.value = ImportBatchStats(
+                    totalCount = parseResult.totalCount,
+                    validCount = parseResult.validCount,
+                    invalidCount = parseResult.invalidCount
+                )
+                if (insertedIds.isNotEmpty()) {
+                    _recentlyImportedIds.value = insertedIds.toSet()
+                    delay(2500)
+                    _recentlyImportedIds.value = emptySet()
+                }
             }
         }
     }
@@ -129,6 +177,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissImportStats() {
         _lastImportStats.value = null
+        _lastImportBatchStats.value = null
+    }
+
+    fun setLanguage(languageCode: String) {
+        preferences.languageCode = languageCode
+        _currentLanguage.value = languageCode
+        val appLocale = LocaleListCompat.forLanguageTags(languageCode)
+        AppCompatDelegate.setApplicationLocales(appLocale)
     }
 
     fun startQueue(preferDirectCall: Boolean = true) {
@@ -198,5 +254,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setAutoAdvanceDelay(seconds: Int) {
         preferences.autoAdvanceDelaySeconds = seconds
         queueManager.setAutoAdvanceDelay(seconds)
+    }
+
+    fun setNumberFormatPreference(format: PhoneNumberFormatPreference) {
+        preferences.numberFormatPreference = format
+        queueManager.setNumberFormatPreference(format)
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun clearSearchQuery() {
+        _searchQuery.value = ""
+    }
+
+    fun setCurrentTarget(entry: PhoneNumberEntry) {
+        queueManager.setCurrentTarget(entry)
+    }
+
+    fun reorderQueue(fromIndex: Int, toIndex: Int) {
+        queueManager.reorderQueue(fromIndex, toIndex)
     }
 }

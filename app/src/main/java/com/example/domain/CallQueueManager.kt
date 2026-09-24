@@ -5,6 +5,7 @@ import com.example.models.CallStatus
 import com.example.models.CallingMode
 import com.example.models.ObservedCallState
 import com.example.models.PhoneNumberEntry
+import com.example.models.PhoneNumberFormatPreference
 import com.example.models.QueueExecutionState
 import com.example.models.QueueSummary
 import com.example.telephony.CallController
@@ -38,11 +39,19 @@ class CallQueueManager(
     private val callStateObserver: CallStateObserver,
     private val scope: CoroutineScope,
     initialCallingMode: CallingMode = CallingMode.AUTO_CALL,
-    initialDelaySeconds: Int = 3
+    initialDelaySeconds: Int = 3,
+    initialNumberFormat: PhoneNumberFormatPreference = PhoneNumberFormatPreference.LOCAL
 ) {
 
     private val _executionState = MutableStateFlow(QueueExecutionState.IDLE)
     val executionState: StateFlow<QueueExecutionState> = _executionState.asStateFlow()
+
+    private val _numberFormatPreference = MutableStateFlow(initialNumberFormat)
+    val numberFormatPreference: StateFlow<PhoneNumberFormatPreference> = _numberFormatPreference.asStateFlow()
+
+    fun setNumberFormatPreference(format: PhoneNumberFormatPreference) {
+        _numberFormatPreference.value = format
+    }
 
     private val _currentEntry = MutableStateFlow<PhoneNumberEntry?>(null)
     val currentEntry: StateFlow<PhoneNumberEntry?> = _currentEntry.asStateFlow()
@@ -123,6 +132,15 @@ class CallQueueManager(
             _currentEntry.value = null
             return
         }
+        val currentTargetId = _currentEntry.value?.id
+        if (currentTargetId != null) {
+            val matchingIdx = items.indexOfFirst { it.id == currentTargetId }
+            if (matchingIdx != -1) {
+                _manualCursorIndex.value = matchingIdx
+                _currentEntry.value = items[matchingIdx]
+                return
+            }
+        }
         val currentIdx = _manualCursorIndex.value
         if (currentIdx == null) {
             // Automatically select the first pending number upon loading
@@ -175,7 +193,7 @@ class CallQueueManager(
                                 // Queue completed, no remaining numbers
                                 _executionState.value = QueueExecutionState.COMPLETED
                                 _countdownRemaining.value = null
-                                _currentEntry.value = null
+                                _currentEntry.value = current.copy(status = CallStatus.COMPLETED)
                                 _events.emit(QueueEvent.QueueFinished(totalCalls = queueSummary.value.completed))
                             } else {
                                 val nextIdx = items.indexOfFirst { it.id == next.id }
@@ -231,6 +249,12 @@ class CallQueueManager(
             return
         }
         if (callInProgress || isDialingNext) return
+        val items = queueItems.value
+        val hasPending = items.any { it.status == CallStatus.PENDING }
+        if (!hasPending && _currentEntry.value == null) {
+            _executionState.value = QueueExecutionState.COMPLETED
+            return
+        }
         val savedCooldown = pausedCooldownSeconds
         pausedCooldownSeconds = null
         _executionState.value = QueueExecutionState.RUNNING
@@ -247,18 +271,16 @@ class CallQueueManager(
 
         scope.launch {
             try {
-                val items = queueItems.value
                 val currentIdx = _manualCursorIndex.value
-                val current = if (currentIdx != null && currentIdx in items.indices) {
-                    val item = items[currentIdx]
-                    if (item.status == CallStatus.PENDING) item else null
-                } else null
-                val next = current ?: repository.getNextPending()
-                if (next != null) {
-                    dialEntry(next, preferDirectCall)
+                val current = _currentEntry.value
+                    ?: (if (currentIdx != null && currentIdx in items.indices) items[currentIdx] else null)
+                    ?: repository.getNextPending()
+                    ?: items.firstOrNull()
+                if (current != null) {
+                    dialEntry(current, preferDirectCall)
                 } else {
                     _executionState.value = QueueExecutionState.COMPLETED
-                    _currentEntry.value = null
+                    _currentEntry.value = items.lastOrNull()?.copy(status = CallStatus.COMPLETED)
                     _events.emit(QueueEvent.QueueFinished(totalCalls = queueSummary.value.completed))
                 }
             } finally {
@@ -271,8 +293,27 @@ class CallQueueManager(
         if (callInProgress || isDialingNext) return
         val items = queueItems.value
         if (items.isEmpty()) return
-        val currentIdx = _manualCursorIndex.value ?: 0
-        val target = items.getOrNull(currentIdx) ?: return
+
+        // Resolve target: the currently selected/displayed target has highest priority,
+        // regardless of its status (PENDING, CALLED, etc.)
+        val currentIdx = _manualCursorIndex.value
+        val current = _currentEntry.value
+            ?: (if (currentIdx != null && currentIdx in items.indices) items[currentIdx] else null)
+            ?: items.firstOrNull { it.status == CallStatus.PENDING }
+            ?: items.firstOrNull()
+
+        if (current == null) {
+            // Queue is exhausted: no remaining callable numbers
+            _executionState.value = QueueExecutionState.COMPLETED
+            return
+        }
+
+        val target = current
+        val targetIdx = items.indexOfFirst { it.id == target.id }
+        if (targetIdx != -1) {
+            _manualCursorIndex.value = targetIdx
+            _currentEntry.value = target
+        }
 
         isDialingNext = true
         autoAdvanceJob?.cancel()
@@ -330,10 +371,30 @@ class CallQueueManager(
         if (callInProgress || isDialingNext) {
             return
         }
+        val items = queueItems.value
+        if (items.isEmpty()) return
         if (_callingMode.value == CallingMode.MANUAL_NEXT) {
             beginManualCall(preferDirectCall)
             return
         }
+
+        val currentIdx = _manualCursorIndex.value
+        val target = _currentEntry.value
+            ?: (if (currentIdx != null && currentIdx in items.indices) items[currentIdx] else null)
+            ?: items.firstOrNull { it.status == CallStatus.PENDING }
+            ?: items.firstOrNull()
+
+        if (target == null) {
+            _executionState.value = QueueExecutionState.COMPLETED
+            return
+        }
+
+        val targetIdx = items.indexOfFirst { it.id == target.id }
+        if (targetIdx != -1) {
+            _manualCursorIndex.value = targetIdx
+            _currentEntry.value = target
+        }
+
         isDialingNext = true
         autoAdvanceJob?.cancel()
         _countdownRemaining.value = null
@@ -341,14 +402,7 @@ class CallQueueManager(
 
         scope.launch {
             try {
-                val next = repository.getNextPending()
-                if (next != null) {
-                    dialEntry(next, preferDirectCall)
-                } else {
-                    _executionState.value = QueueExecutionState.COMPLETED
-                    _currentEntry.value = null
-                    _events.emit(QueueEvent.QueueFinished(totalCalls = queueSummary.value.completed))
-                }
+                dialEntry(target, preferDirectCall)
             } finally {
                 isDialingNext = false
             }
@@ -471,6 +525,29 @@ class CallQueueManager(
         }
     }
 
+    fun setCurrentTarget(entry: PhoneNumberEntry) {
+        val items = queueItems.value
+        val idx = items.indexOfFirst { it.id == entry.id }
+        if (idx != -1) {
+            val target = items[idx]
+            _manualCursorIndex.value = idx
+            _currentEntry.value = target
+            if (_executionState.value == QueueExecutionState.COMPLETED) {
+                _executionState.value = QueueExecutionState.PAUSED
+            }
+            autoAdvanceJob?.cancel()
+            _countdownRemaining.value = null
+            if (target.status != CallStatus.PENDING) {
+                // When selecting a non-pending number (e.g. Called), do not auto-call; wait for manual user action
+                if (_executionState.value == QueueExecutionState.RUNNING) {
+                    _executionState.value = QueueExecutionState.PAUSED
+                }
+            } else if (_callingMode.value == CallingMode.AUTO_CALL && _executionState.value == QueueExecutionState.RUNNING && !callInProgress) {
+                startAutoCallCooldown()
+            }
+        }
+    }
+
     fun callSpecificEntry(entry: PhoneNumberEntry, preferDirectCall: Boolean = true) {
         autoAdvanceJob?.cancel()
         _countdownRemaining.value = null
@@ -494,7 +571,7 @@ class CallQueueManager(
         }
         repository.updateStatus(entry.id, CallStatus.CALLING)
 
-        val dialTarget = if (entry.isValid) entry.normalizedNumber else entry.originalInput
+        val dialTarget = PhoneNumberNormalizer.getDialTarget(entry, _numberFormatPreference.value)
         when (val result = callController.initiateCall(dialTarget, preferDirectCall)) {
             is CallInitiationResult.Success -> {
                 callInProgress = true
@@ -541,21 +618,26 @@ class CallQueueManager(
 
     private fun triggerAutoCallNext(preferDirectCall: Boolean = true) {
         if (callInProgress || isDialingNext) return
+        val items = queueItems.value
+        if (items.isEmpty()) return
+        val hasPending = items.any { it.status == CallStatus.PENDING }
+        if (!hasPending && _currentEntry.value == null) {
+            _executionState.value = QueueExecutionState.COMPLETED
+            return
+        }
         isDialingNext = true
         scope.launch {
             try {
-                val items = queueItems.value
                 val currentIdx = _manualCursorIndex.value
-                val current = if (currentIdx != null && currentIdx in items.indices) {
-                    val item = items[currentIdx]
-                    if (item.status == CallStatus.PENDING) item else null
-                } else null
-                val next = current ?: repository.getNextPending()
-                if (next != null) {
-                    dialEntry(next, preferDirectCall)
+                val current = _currentEntry.value
+                    ?: (if (currentIdx != null && currentIdx in items.indices) items[currentIdx] else null)
+                    ?: repository.getNextPending()
+                    ?: items.firstOrNull()
+                if (current != null) {
+                    dialEntry(current, preferDirectCall)
                 } else {
                     _executionState.value = QueueExecutionState.COMPLETED
-                    _currentEntry.value = null
+                    _currentEntry.value = items.lastOrNull()?.copy(status = CallStatus.COMPLETED)
                     _events.emit(QueueEvent.QueueFinished(totalCalls = queueSummary.value.completed))
                 }
             } finally {
@@ -607,6 +689,42 @@ class CallQueueManager(
     fun retryEntry(id: Long) {
         scope.launch {
             repository.resetStatus(id)
+        }
+    }
+
+    fun reorderQueue(fromIndex: Int, toIndex: Int) {
+        if (fromIndex == toIndex) return
+        val items = queueItems.value.toMutableList()
+        if (fromIndex !in items.indices || toIndex !in items.indices) return
+
+        val movedItem = items.removeAt(fromIndex)
+        // Rule: When a Skipped item is manually repositioned using drag-and-drop, change its status to Pending
+        val itemToInsert = if (movedItem.status == CallStatus.SKIPPED) {
+            movedItem.copy(status = CallStatus.PENDING, callTimestamp = null)
+        } else {
+            movedItem
+        }
+        items.add(toIndex, itemToInsert)
+
+        // Assign updated sequential orderIndex to all items based on new positions
+        val reordered = items.mapIndexed { index, entry ->
+            entry.copy(orderIndex = index)
+        }
+
+        // Update currentEntry if the moved item was the current target
+        val current = _currentEntry.value
+        if (current != null && current.id == movedItem.id) {
+            _currentEntry.value = itemToInsert
+            _manualCursorIndex.value = toIndex
+        } else if (current != null) {
+            val newIdx = reordered.indexOfFirst { it.id == current.id }
+            if (newIdx != -1) {
+                _manualCursorIndex.value = newIdx
+            }
+        }
+
+        scope.launch {
+            repository.updateAll(reordered)
         }
     }
 }

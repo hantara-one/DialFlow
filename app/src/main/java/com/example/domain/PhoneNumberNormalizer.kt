@@ -1,5 +1,8 @@
 package com.example.domain
 
+import com.example.models.PhoneNumberEntry
+import com.example.models.PhoneNumberFormatPreference
+
 data class NormalizationResult(
     val isValid: Boolean,
     val rawInput: String,
@@ -195,6 +198,73 @@ object PhoneNumberNormalizer {
             full.length in 5..8 -> "${full.substring(0, 4)}-${full.substring(4)}"
             full.length in 9..12 -> "${full.substring(0, 4)}-${full.substring(4, 8)}-${full.substring(8)}"
             else -> "${full.substring(0, 4)}-${full.substring(4, 8)}-${full.substring(8, 12)}-${full.substring(12)}"
+        }
+    }
+
+    fun formatIndonesianMobileInternational(nationalDigitsStartingWith8: String): String {
+        val d = nationalDigitsStartingWith8
+        val formattedNational = when {
+            d.length <= 3 -> d
+            d.length in 4..7 -> "${d.substring(0, 3)}-${d.substring(3)}"
+            d.length in 8..11 -> "${d.substring(0, 3)}-${d.substring(3, 7)}-${d.substring(7)}"
+            else -> "${d.substring(0, 3)}-${d.substring(3, 7)}-${d.substring(7, 11)}-${d.substring(11)}"
+        }
+        return "+62 $formattedNational"
+    }
+
+    /**
+     * Resolves the display presentation for a queue entry based on the user's
+     * presentation preference. Does not mutate the underlying canonical entry.
+     */
+    fun getDisplayNumber(
+        entry: PhoneNumberEntry,
+        preference: PhoneNumberFormatPreference
+    ): String {
+        if (!entry.isValid) {
+            return entry.formattedDisplay.ifBlank { entry.originalInput }
+        }
+        val normalized = entry.normalizedNumber
+        if (!normalized.startsWith("+62")) {
+            return entry.formattedDisplay.ifBlank { normalized }
+        }
+        val nationalDigits = normalized.substring(3)
+        return when (preference) {
+            PhoneNumberFormatPreference.LOCAL -> {
+                if (nationalDigits.startsWith("8")) {
+                    formatIndonesianMobile(nationalDigits)
+                } else {
+                    "0$nationalDigits"
+                }
+            }
+            PhoneNumberFormatPreference.INTERNATIONAL -> {
+                if (nationalDigits.startsWith("8")) {
+                    formatIndonesianMobileInternational(nationalDigits)
+                } else {
+                    "+62 $nationalDigits"
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolves the exact dialing target passed to Android Telecom based on the
+     * user's preference. Local: 08..., International: +62...
+     */
+    fun getDialTarget(
+        entry: PhoneNumberEntry,
+        preference: PhoneNumberFormatPreference
+    ): String {
+        if (!entry.isValid) {
+            return entry.originalInput
+        }
+        val normalized = entry.normalizedNumber
+        if (!normalized.startsWith("+62")) {
+            return normalized
+        }
+        val nationalDigits = normalized.substring(3)
+        return when (preference) {
+            PhoneNumberFormatPreference.LOCAL -> "0$nationalDigits"
+            PhoneNumberFormatPreference.INTERNATIONAL -> "+62$nationalDigits"
         }
     }
 }
