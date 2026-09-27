@@ -170,19 +170,19 @@ Future development may include additional workflow optimizations, usability impr
 <table>
   <tr>
     <td align="center">
-      <img width="720" height="1600" alt="Screenshot_20260925_114625" src="https://github.com/user-attachments/assets/f2614797-2fbc-4eb8-b228-2287ea094288" width="180"><br>
+      <img width="720" height="1600" alt="Import Numbers" src="https://github.com/user-attachments/assets/c655f240-1179-404f-a1c9-1abc2f5665c7" /> <br>
       <b>Import Numbers</b>
     </td>
     <td align="center">
-      <img width="720" height="1600" alt="Screenshot_20260925_114607" src="https://github.com/user-attachments/assets/df75d1ed-4c4a-4940-8e60-e9b244fae728" width="180"><br>
+      <img width="720" height="1600" alt="Calling Queue" src="https://github.com/user-attachments/assets/9b3ecd34-f148-43ce-bf28-3a99509e4f61" /> <br>
       <b>Calling Queue</b>
     </td>
     <td align="center">
-      <img width="720" height="1600" alt="Screenshot_20260925_114532" src="https://github.com/user-attachments/assets/9a53b0b4-277a-4732-906a-9e7aa085ff9c" width="180"><br>
+      <img width="720" height="1600" alt="Progress Tracking" src="https://github.com/user-attachments/assets/7b3ea5df-d285-404c-8144-378bf11c6e8e" /> <br>
       <b>Progress Tracking</b>
     </td>
     <td align="center">
-      <img width="720" height="1600" alt="Screenshot_20260927_082200" src="https://github.com/user-attachments/assets/bfc80d1d-dee0-40c1-9307-529ebcecf2ba" width="180"><br>
+      <img width="720" height="1600" alt="Settings" src="https://github.com/user-attachments/assets/fecf0680-5f25-463c-95ee-4550cd13233f" /> <br>
       <b>Settings</b>
     </td>
   </tr>
