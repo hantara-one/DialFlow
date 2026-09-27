@@ -1,3 +1,17 @@
+<p align="center">
+  <img src="assets/dialflow-logo.png" width="140">
+</p>
+
+<h1 align="center">DialFlow</h1>
+
+<p align="center">
+  <b>An Android calling queue app for faster, more organized calling workflows.</b>
+</p>
+
+<p align="center">
+  📞 Calling Queue  · 📊 Progress Tracking 
+</p>
+
 # 📞 DialFlow
 
 > An Android calling queue app designed to make repetitive customer-calling workflows faster, more organized, and easier to manage.
