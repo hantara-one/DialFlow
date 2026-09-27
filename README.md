@@ -192,7 +192,7 @@ Future development may include additional workflow optimizations, usability impr
 
 ## 📦 Releases
 
-Check the **Releases** section of this repository for downloadable APK builds and version history.
+Check the **[Releases](https://github.com/hantara-one/DialFlow/releases)** section of this repository for downloadable APK builds and version history.
 
 ---
 
